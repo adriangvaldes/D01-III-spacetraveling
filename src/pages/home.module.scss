@@ -1,1 +1,33 @@
-// TODO
+.container {
+  height: 5rem;
+  max-width: 1120px;
+  height: 10rem;
+  margin: 0 auto;
+  padding: 2rem; 
+  
+  display: block;
+  align-items: center;
+}
+
+.posts {
+
+
+  .info{
+    display: flex;
+    margin-top: 1.5rem;
+
+    div {
+      display: flex;
+      color: var(--gray-200);  
+
+      & + div {
+        margin-left: 2rem;
+      }
+
+      p {
+        margin-left: 0.5rem;
+      }
+    }
+  }
+  
+}
