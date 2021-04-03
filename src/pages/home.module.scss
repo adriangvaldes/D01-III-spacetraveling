@@ -1,33 +1,65 @@
 .container {
   height: 5rem;
-  max-width: 1120px;
-  height: 10rem;
+  max-width: 1040px;
+  height: 100%;
   margin: 0 auto;
-  padding: 2rem; 
-  
   display: block;
-  align-items: center;
+  // background-color: aquamarine;
+  span{
+    position: absolute;
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: var(--magenta);
+    margin-top: 5rem;
+    padding-bottom: 8rem;
+  }
 }
 
 .posts {
+  max-width: 720px;
+  a {
+    display: block;
 
+    & + a {
+      margin-top: 3rem;
+    }
 
-  .info{
-    display: flex;
-    margin-top: 1.5rem;
-
-    div {
+    strong {
+      font-size: 1.75rem;
+      transition: color 0.2s;
+    }
+    
+    p {
+      margin-top: 0.5rem;
+    }
+    
+    .info{
       display: flex;
-      color: var(--gray-200);  
+      align-items: center;
+      // margin-top: 1.5rem;
+  
+      div {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--gray-200);  
 
-      & + div {
-        margin-left: 2rem;
-      }
+        & + div {
+          margin-left: 1.5rem;
+        }
 
-      p {
-        margin-left: 0.5rem;
+        p {
+          line-height: 2rem;
+          font-size: 0.875rem;
+          margin-left: 0.5rem;
+        }
       }
+    }
+
+    &:hover strong {
+      color: var(--magenta);
     }
   }
   
+
 }

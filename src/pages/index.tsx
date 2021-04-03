@@ -5,6 +5,8 @@ import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
+import Prismic from '@prismicio/client';
+import { RichText } from 'prismic-dom';
 
 interface Post {
   uid?: string;
@@ -22,10 +24,11 @@ interface PostPagination {
 }
 
 interface HomeProps {
-  postsPagination: PostPagination;
+  // postsPagination: PostPagination;
+  posts: Post[];
 }
 
-export default function Home() {
+export default function Home({ posts }: HomeProps) {
   return(
     <>
       <Head>
@@ -33,46 +36,57 @@ export default function Home() {
       </Head>
 
       <main className={styles.container}>
-        <div className={styles.posts}>
-          <a href="">
-            <strong>Como utilizar Hooks</strong>
-            <p>Pensando em sicronização em vez de ciclos de vida</p>
-            <div className={styles.info}>
-              <div>
-                <img src="/images/calendar.svg" alt="calendar"/> 
-                <p>12 de abril de 2021</p>
+        <div className={styles.posts}>  
+          {posts.map(post => (
+            <a key={post.uid} href="">
+              <strong>{post.data.title}</strong>
+              <p>{post.data.subtitle}</p>
+              <div className={styles.info}>
+                <div>
+                  <img src="/images/calendar.svg" alt="calendar"/> 
+                  <p>{post.first_publication_date}</p>
+                </div>
+                <div>
+                  <img src="/images/user.svg" alt="users"/> 
+                  <p>{post.data.author}</p>
+                </div>
               </div>
-              <div>
-                <img src="/images/user.svg" alt="users"/> 
-                <p>João Miguel</p>
-              </div>
-            </div>
-          </a>
-        </div>
-        <div className={styles.posts}>
-          <a href="">
-            <strong>Criando um app do Zero</strong>
-            <p>Tudo sobre criar um app do zero</p>
-            <div className={styles.info}>
-              <div>
-                <img src="/images/calendar.svg" alt="calendar"/> 
-                <p>15 de março de 2021</p>
-              </div>
-              <div>
-                <img src="/images/user.svg" alt="users"/> 
-                <p>Antonio Bermudes</p>
-              </div>
-            </div>
-          </a>
+            </a>
+          ))}
         </div>
       </main>
     </>
   );
 }
 
-// export const getStaticProps = async () => {
-//   // const prismic = getPrismicClient();
-//   // const postsResponse = await prismic.query(TODO);
+export const getStaticProps = async () => {
+  const prismic = getPrismicClient();
+  const postsResponse = await prismic.query('',
+    { 
+      fetch: ['posts.title', 'posts.subtitle', 'posts.author'],
+      pageSize: 4
+  })
 
-//   // TODO
-// };
+  // console.log(postsResponse.results[0].data)
+
+
+  const posts = postsResponse.results.map(post => {
+    return {
+      uid: post.uid,
+      first_publication_date: new Date(post.last_publication_date).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      }),
+      data: {
+        title: RichText.asText(post.data.title),
+        subtitle: RichText.asText(post.data.subtitle),
+        author: RichText.asText(post.data.author)
+      },
+    }
+  })
+
+  return {
+    props: { posts }
+  }
+}
