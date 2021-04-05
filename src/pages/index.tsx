@@ -1,5 +1,6 @@
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
+import Header from '../components/Header';
 
 import { getPrismicClient } from '../services/prismic';
 
@@ -32,6 +33,7 @@ interface HomeProps {
 export default function Home({ posts }: HomeProps) {
   return(
     <>
+      <Header isHome={true}/>
       <Head>
           <title>Home | spacetraveling</title>
       </Head>
@@ -39,7 +41,7 @@ export default function Home({ posts }: HomeProps) {
       <main className={styles.container}>
         <div className={styles.posts}>  
           {posts.map(post => (
-            <Link key={post.uid} href={`/posts/${post.uid}`}>
+            <Link key={post.uid} href={`/post/${post.uid}`}>
               <a>
                 <strong>{post.data.title}</strong>
                 <p>{post.data.subtitle}</p>

@@ -1,11 +1,13 @@
 import styles from './header.module.scss';
 
-export default function Header() {
+interface HeaderProps{
+  isHome: boolean;
+}
+
+export default function Header({ isHome }:HeaderProps) {
   return (
-    <header className={styles.headerContainer}>
-      <div className={styles.headerContent}>
+    <header className={isHome?styles.headerContainer:styles.headerContainerPost}>
         <img src="/images/logo.svg" alt="spacetraveling"/>
-      </div>
     </header>
   );
 }
