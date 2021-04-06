@@ -39,7 +39,7 @@ export default function Post({ post }:PostProps) {
           <img src={post.data.banner.url} alt="bannerPost"/>
         </div>
         <main className={styles.postContainer}>
-          <h1>Criando um app CRA do zero</h1>
+          <h1>{post.data.title}</h1>
           <div className={styles.postInfo}>
             <img src="/images/calendar.svg" alt="calendar"/> 
             <p>{post.first_publication_date}</p>
@@ -49,9 +49,17 @@ export default function Post({ post }:PostProps) {
             <p>4 min</p> 
           </div>
           <div className={styles.postContent}> {/*Parte q vai ser pega por map */}
-            <h1>Point et varius</h1>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Impedit, eos quis quaerat laudantium, sit eum praesentium omnis excepturi nostrum cum, reiciendis voluptas quia non ipsam rerum voluptate magnam quo eligendi.</p>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Impedit, eos quis quaerat laudantium, sit eum praesentium omnis excepturi nostrum cum, reiciendis voluptas quia non ipsam rerum voluptate magnam quo eligendi.</p>
+            {post.data.content.map(content => (
+              <>
+              <h1>{content.heading}</h1>
+              {content.body.map(body => (
+                <p>{body.text}</p>
+              ))}
+              </>
+            ))}
+            {/* <h1>{post.data.content[0].heading}</h1>
+            <p>{post.data.content[0].body[0].text}</p>
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Impedit, eos quis quaerat laudantium, sit eum praesentium omnis excepturi nostrum cum, reiciendis voluptas quia non ipsam rerum voluptate magnam quo eligendi.</p> */}
           </div>
         </main>
      </>
@@ -97,15 +105,15 @@ export const getStaticProps:GetStaticProps = async ({ params }) => {
         url: response.data.banner.url,
       },
       author: RichText.asText(response.data.author),
-      content: {
-        heading: 'Some heading',//RichText.asText(response.data.content.heading),
-        body: {
-          text: 'Some text',//RichText.asText(response.data.content.body.text),
-        },
-      },
+      content: response.data.content.map(content => ({
+        heading: RichText.asText(content.heading),
+        body: content.body.map(body => ({
+          text: body.text.concat('\n')
+        }))
+      }))
+     }
   }
-  }
-  // console.log(response.data)
+  console.log(response.data)
   // console.log(JSON.stringify(post))
 
   return {
