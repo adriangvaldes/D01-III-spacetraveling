@@ -73,15 +73,14 @@ export default function Post({ post }:PostProps) {
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const prismic = getPrismicClient();
-  const paths = await prismic.query(Prismic.Predicates.at('document-type', 'posts'),
-    {
-      pageSize: 5, 
-    });
-
+  // const paths = await prismic.query(Prismic.Predicates.at('document-type', 'posts'),
+  //   {
+  //     pageSize: 5, 
+  //   });
 
   return {
     paths: [],
-    fallback: true
+    fallback: 'blocking'
   }
 };
 
@@ -90,6 +89,7 @@ export const getStaticProps:GetStaticProps = async (context) => {
   const { slug } = context.params;
 
   const response = await prismic.getByUID('posts', String(slug), {});
+  // console.log(response.data.content[1].heading)
 
   const post = {
     first_publication_date: new Date(response.last_publication_date).toLocaleDateString('pt-BR', {
@@ -98,20 +98,26 @@ export const getStaticProps:GetStaticProps = async (context) => {
       year: 'numeric'
     }),
     data: {
-      title: RichText.asText(response.data.title),
+      title: response.data.title[0].text,
       banner: {
         url: response.data.banner.url,
       },
-      author: RichText.asText(response.data.author),
+      author: response.data.author[0].text,
       content: response.data.content.map(content => ({
-        heading: RichText.asText(content.heading),
-        body: content.body.map(body => ({
+        heading: content.heading[0]?.text ?? '',
+        body: content.body.map(body=>({
+          type: body.type,
           text: body.text
         }))
       }))
      }
   }
-  console.log(response.data.content[1].body[1].spans)
+
+  const formatedDate = new Date(response.last_publication_date).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
 
   return {
     props: { post }
