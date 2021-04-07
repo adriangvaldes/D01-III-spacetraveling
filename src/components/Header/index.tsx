@@ -7,7 +7,7 @@ interface HeaderProps{
 export default function Header({ isHome }:HeaderProps) {
   return (
     <header className={isHome?styles.headerContainer:styles.headerContainerPost}>
-        <img src="/images/logo.svg" alt="spacetraveling"/>
+        <img src="/images/logo.svg" alt="logo"/>
     </header>
   );
 }

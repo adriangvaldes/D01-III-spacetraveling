@@ -58,8 +58,8 @@ export default function Home({ posts }: HomeProps) {
               </a>
             </Link>
           ))}
+          <button type="button">Carregar mais post</button>
         </div>
-        <button type="button">Carregar mais post</button>
       </main>
     </>
   );
@@ -70,8 +70,9 @@ export const getStaticProps:GetStaticProps = async () => {
   const postsResponse = await prismic.query('',
     { 
       fetch: ['posts.title', 'posts.subtitle', 'posts.author'],
-      pageSize: 4
-  })
+      pageSize: 2,
+      page: 1
+    })
 
 
   const posts = postsResponse.results.map(post => {
