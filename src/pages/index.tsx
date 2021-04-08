@@ -11,13 +11,11 @@ import { RichText } from 'prismic-dom';
 import ptBR from 'date-fns/locale/pt-BR';
 import { format } from 'date-fns';
 
-import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
 
 interface Post {
   uid?: string;
   first_publication_date: string | null;
-  // first_publication_date_Formated: string | null;
   data: {
     title: string;
     subtitle: string;
@@ -32,34 +30,61 @@ interface PostPagination {
 
 interface HomeProps {
   postsPagination: PostPagination;
-  posts: Post[];
 }
 
 
 
 export default function Home({ postsPagination }: HomeProps) {
-  
-  const formattedPosts = postsPagination.results.map(post => ({
-    ...post,
-    first_publication_date: format(
-      new Date(post.first_publication_date),
-      'dd MMM yyyy',
-      {
-        locale: ptBR,
-      }
-    ),
-  }))
+  const formattedPosts = postsPagination.results.map(post => {
+    return {
+      uid: post.uid,
+      first_publication_date: format(
+        new Date(post.first_publication_date),
+        'dd MMM yyyy',
+        {
+          locale: ptBR,
+        }
+      ),
+      data: {
+        title: post.data.title,
+        subtitle: post.data.subtitle,
+        author: post.data.author,
+      },
+    } 
+  })
 
-  const [postsData, setPostsData] = useState<Post[]>(formattedPosts)
+  const [posts, setPosts] = useState<Post[]>(formattedPosts)
   const [nextPage, setNextPage] = useState<string>(postsPagination.next_page)
+  const [currentPage, setCurrentPage] = useState(1);
 
-  async function handlePagination(){
-    const postsResponse = await fetch(nextPage)
+  async function handlePagination(): Promise<void>{
+    if(currentPage !== 1 && nextPage === null) return
+
+    const postsResponse = await fetch(`${nextPage}`)
       .then(response => response.json())
       
     setNextPage(postsResponse.next_page)
+    setCurrentPage(postsResponse.page)
 
+    const loadPosts = postsResponse.results.map(post => {
+      return {
+        uid: post.uid,
+        first_publication_date: format(
+          new Date(post.first_publication_date),
+          'dd MMM yyyy',
+          {
+            locale: ptBR,
+          }
+        ),
+        data: {
+          title: post.data.title,
+          subtitle: post.data.subtitle,
+          author: post.data.author,
+        },
+      };
+    });
 
+    setPosts([...posts, ...loadPosts])
     
   }
   
@@ -72,7 +97,7 @@ export default function Home({ postsPagination }: HomeProps) {
 
       <main className={styles.container}>
         <div className={styles.posts}>  
-          {postsData.map(post => (
+          {posts.map(post => (
             <Link key={post.uid} href={`/post/${post.uid}`}>
               <a>
                 <strong>{post.data.title}</strong>
@@ -103,11 +128,11 @@ export default function Home({ postsPagination }: HomeProps) {
 export const getStaticProps:GetStaticProps = async () => {
   const prismic = getPrismicClient();
 
-  const postsResponse = await prismic.query('',
+  const postsResponse = await prismic.query(
+    [Prismic.Predicates.at('document.type', 'posts')],
     { 
       fetch: ['posts.title', 'posts.subtitle', 'posts.author'],
-      pageSize: 1,
-      page: 1
+      pageSize: 2,
     })
   
   const posts = postsResponse.results.map(post => {
@@ -115,19 +140,19 @@ export const getStaticProps:GetStaticProps = async () => {
       uid: post.uid,
       first_publication_date: post.first_publication_date,
       data: {
-        title: RichText.asText(post.data.title),
-        subtitle: RichText.asText(post.data.subtitle),
-        author: RichText.asText(post.data.author)
+        title: post.data.title,
+        subtitle: post.data.subtitle,
+        author: post.data.author
       },
     }
   })
 
   const postsPagination:PostPagination = {
     next_page: postsResponse.next_page,
-    results: [...postsResponse.results],
+    results: posts,
   }
 
   return {
-    props: { posts, postsPagination }
+    props: { postsPagination }
   }
 }
