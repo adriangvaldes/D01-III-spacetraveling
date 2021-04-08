@@ -11,6 +11,7 @@ import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
 interface Post {
   first_publication_date: string | null;
+  first_publication_date_Formated: string | null;
   data: {
     title: string;
     banner: {
@@ -50,7 +51,7 @@ export default function Post({ post }:PostProps) {
           <h1>{post.data.title}</h1>
           <div className={styles.postInfo}>
             <img src="/images/calendar.svg" alt="calendar"/> 
-            <p>{post.first_publication_date}</p>
+            <p>{post.first_publication_date_Formated}</p>
             <img src="/images/user.svg" alt="users"/> 
             <p>{post.data.author}</p>
             <img src="/images/user.svg" alt="users"/>
@@ -92,7 +93,8 @@ export const getStaticProps:GetStaticProps = async (context) => {
   // console.log(response.data.content[1].heading)
 
   const post = {
-    first_publication_date: new Date(response.last_publication_date).toLocaleDateString('pt-BR', {
+    first_publication_date: response.first_publication_date,
+    first_publication_date_Formated: new Date(response.first_publication_date).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: 'long',
       year: 'numeric'
@@ -112,12 +114,6 @@ export const getStaticProps:GetStaticProps = async (context) => {
       }))
      }
   }
-
-  const formatedDate = new Date(response.last_publication_date).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric'
-  });
 
   return {
     props: { post }
