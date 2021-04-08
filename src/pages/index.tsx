@@ -35,6 +35,7 @@ interface HomeProps {
 
 
 export default function Home({ postsPagination }: HomeProps) {
+
   const formattedPosts = postsPagination.results.map(post => {
     return {
       uid: post.uid,
@@ -115,10 +116,11 @@ export default function Home({ postsPagination }: HomeProps) {
               </a>
             </Link>
           ))}
-          {nextPage?
-            <button type="button" onClick={() => handlePagination()}>Carregar mais post</button>
-            :null
-          }
+          {nextPage &&(
+            <button type="button" onClick={() => handlePagination()}>
+              Carregar mais posts
+            </button>
+          )}
         </div>
       </main>
     </>
@@ -128,28 +130,28 @@ export default function Home({ postsPagination }: HomeProps) {
 export const getStaticProps:GetStaticProps = async () => {
   const prismic = getPrismicClient();
 
-  const postsResponse = await prismic.query(
+  const posts = await prismic.query(
     [Prismic.Predicates.at('document.type', 'posts')],
     { 
       fetch: ['posts.title', 'posts.subtitle', 'posts.author'],
       pageSize: 2,
     })
   
-  const posts = postsResponse.results.map(post => {
-    return {
-      uid: post.uid,
-      first_publication_date: post.first_publication_date,
-      data: {
-        title: post.data.title,
-        subtitle: post.data.subtitle,
-        author: post.data.author
-      },
-    }
-  })
+  // const posts = postsResponse.results.map(post => {
+  //   return {
+  //     uid: post.uid,
+  //     first_publication_date: post.first_publication_date,
+  //     data: {
+  //       title: post.data.title,
+  //       subtitle: post.data.subtitle,
+  //       author: post.data.author
+  //     },
+  //   }
+  // })
 
   const postsPagination:PostPagination = {
-    next_page: postsResponse.next_page,
-    results: posts,
+    next_page: posts.next_page,
+    results: posts.results,
   }
 
   return {

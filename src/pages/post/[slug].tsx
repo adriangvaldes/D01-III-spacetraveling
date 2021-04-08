@@ -1,17 +1,23 @@
+import React, { Fragment } from 'react';
 import { GetStaticPaths, GetStaticProps } from 'next';
-import Header from '../../components/Header';
 import { getPrismicClient } from '../../services/prismic';
 import Prismic from '@prismicio/client';
 import Head from 'next/head';
-import { RichText } from 'prismic-dom';
 import { strictEqual } from 'node:assert';
 import { useRouter } from 'next/router';
+import PrismicDOM from 'prismic-dom';
+
+import Header from '../../components/Header';
+
+import { RichText } from 'prismic-dom';
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
 
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
+
 interface Post {
   first_publication_date: string | null;
-  first_publication_date_Formated: string | null;
   data: {
     title: string;
     banner: {
@@ -51,20 +57,24 @@ export default function Post({ post }:PostProps) {
           <h1>{post.data.title}</h1>
           <div className={styles.postInfo}>
             <img src="/images/calendar.svg" alt="calendar"/> 
-            <p>{post.first_publication_date_Formated}</p>
+            <p>{format(new Date(post.first_publication_date), 'dd MMM yyyy', {
+                  locale: ptBR,})}
+            </p>
             <img src="/images/user.svg" alt="users"/> 
             <p>{post.data.author}</p>
             <img src="/images/user.svg" alt="users"/>
             <p>4 min</p> 
           </div>
           <div className={styles.postContent}> {/*Parte q vai ser pega por map */}
-            {post.data.content.map(content => (
-              <>
-              <h1>{content.heading}</h1>
-              {content.body.map(body => (
-                <p>{body.text}</p>
-              ))}
-              </>
+            {post.data.content.map(({ heading, body }) => (
+              <Fragment key={heading}>
+                <h2>{heading}</h2>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: PrismicDOM.RichText.asHtml(body),
+                  }}
+                />
+              </Fragment>
             ))}
           </div>
         </main>
@@ -74,15 +84,19 @@ export default function Post({ post }:PostProps) {
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const prismic = getPrismicClient();
-  // const paths = await prismic.query(Prismic.Predicates.at('document-type', 'posts'),
-  //   {
-  //     pageSize: 5, 
-  //   });
+
+  const posts = await prismic.query([
+    Prismic.Predicates.at('document.type', 'posts'),
+  ]);
+
+  const paths = posts.results.map(post => ({
+    params: { slug: post.uid },
+  }));
 
   return {
-    paths: [],
-    fallback: 'blocking'
-  }
+    paths,
+    fallback: true,
+  };
 };
 
 export const getStaticProps:GetStaticProps = async (context) => {
@@ -90,32 +104,8 @@ export const getStaticProps:GetStaticProps = async (context) => {
   const { slug } = context.params;
 
   const response = await prismic.getByUID('posts', String(slug), {});
-  // console.log(response.data.content[1].heading)
-
-  const post = {
-    first_publication_date: response.first_publication_date,
-    first_publication_date_Formated: new Date(response.first_publication_date).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    }),
-    data: {
-      title: response.data.title[0].text,
-      banner: {
-        url: response.data.banner.url,
-      },
-      author: response.data.author[0].text,
-      content: response.data.content.map(content => ({
-        heading: content.heading[0]?.text ?? '',
-        body: content.body.map(body=>({
-          type: body.type,
-          text: body.text
-        }))
-      }))
-     }
-  }
 
   return {
-    props: { post }
+    props: { post:response }
   }
 };

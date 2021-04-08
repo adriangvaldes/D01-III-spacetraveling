@@ -7,6 +7,10 @@
   
   display: flex;
   align-items: center;
+  
+  img {
+    cursor: pointer;
+  }
 }
 
 .headerContainerPost {
@@ -14,6 +18,7 @@
   display: block;
   
   img {
+    cursor: pointer;
     margin-left: 20%;
     margin-top: 2.265rem;
   }
